@@ -1,0 +1,6 @@
+data
+generate
+*.exe
+*.android
+*.linux
+resource.syso
