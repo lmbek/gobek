@@ -1,3 +1,3 @@
-module github.com/NineNineFive/go-locacol
+module github.com/NineNineFive/go-local-web-gui
 
 go 1.19
