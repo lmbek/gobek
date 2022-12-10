@@ -1,6 +1,6 @@
-data
-generate
+example/data
+example/generate
 *.exe
 *.android
 *.linux
-resource.syso
+example/resource.syso
