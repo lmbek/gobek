@@ -1,8 +1,8 @@
 use .
 use ./backend/api
 use ./backend/api/something
-use ./backend/fileserver
-use ./backend/fileserver/gzipResponse
-use ./backend/launcher
-use ./backend/utils
-use ./backend/windows
+use ./backend/go-local-web-gui/fileserver
+use ./backend/go-local-web-gui/fileserver/gzipResponse
+use ./backend/go-local-web-gui/launcher
+use ./backend/go-local-web-gui/utils
+use ./backend/go-local-web-gui/windows
