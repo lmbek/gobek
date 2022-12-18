@@ -15,7 +15,7 @@ import (
 )
 
 var FrontendPath = "./frontend" // should be set doing runtime by main.go
-var server = http.Server{
+var Server = http.Server{
 	Addr:              "", // should be set doing runtime by main.go with fileserver.SetServerAddress
 	Handler:           nil,
 	TLSConfig:         nil,
@@ -33,11 +33,11 @@ var server = http.Server{
 var ServerGraceShutdownTime = 5 * time.Second
 
 func SetServerAddress(address string) {
-	server.Addr = address
+	Server.Addr = address
 }
 
 func GetServerAddress() string {
-	return server.Addr
+	return Server.Addr
 }
 
 func ServeFileServer(response http.ResponseWriter, request *http.Request) {
@@ -59,12 +59,14 @@ func ServeFileServer(response http.ResponseWriter, request *http.Request) {
 func setHeaders(response http.ResponseWriter, request *http.Request) http.ResponseWriter {
 	// Headers can be set here
 	// Add Cache Cache-Control: max-age=31536000, immutable
-	response.Header().Add("Cache-Control", "max-age=31536000, immutable")
+
+	// response.Header().Add("Cache-Control", "max-age=31536000, immutable")
+
 	return response
 }
 
 func Start() error {
-	err := server.ListenAndServe()
+	err := Server.ListenAndServe()
 	if err != nil && !errors.Is(err, http.ErrServerClosed) {
 		return errors.New("ErrServerClosed: " + err.Error())
 	} else if err != nil {
@@ -78,7 +80,7 @@ func Start() error {
 func Shutdown(serverContext context.Context) {
 	serverContext, cancel := context.WithTimeout(serverContext, ServerGraceShutdownTime)
 	defer cancel()
-	err := server.Shutdown(serverContext)
+	err := Server.Shutdown(serverContext)
 	if err != nil {
 		log.Println("Panic soon: " + err.Error())
 		log.Println("Time to panic:")
