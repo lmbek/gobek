@@ -1,10 +1,8 @@
 package launcher
 
 import (
-	"api"
 	"fileserver"
 	"fmt"
-	"net/http"
 	"runtime"
 	"sync"
 )
@@ -49,9 +47,5 @@ func StartFrontendAndBackendLinux(frontendPath string, launcher ChromiumLauncher
 
 func StartServer(frontendPath string) error {
 	fileserver.FrontendPath = frontendPath
-
-	// HTTP HANDLERS
-	http.HandleFunc("/", fileserver.ServeFileServer) // address: /
-	http.HandleFunc("/api/", api.ServeAPIUseGZip)    // address: /api/
 	return fileserver.GracefulStart()
 }
