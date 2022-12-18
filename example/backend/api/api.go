@@ -10,6 +10,10 @@ import (
 	"strings"
 )
 
+func InitHandler() {
+	http.HandleFunc("/api/", ServeAPIUseGZip) // address: /api/
+}
+
 func ServeAPIUseGZip(response http.ResponseWriter, request *http.Request) {
 	if !strings.Contains(request.Header.Get("Accept-Encoding"), "gzip") {
 		ServeAPI(response, request)
@@ -40,7 +44,7 @@ func ServeAPI(response http.ResponseWriter, request *http.Request) {
 	// api commands (URLs)
 	switch request.URL.Path {
 
-	case "/api/test/list/":
+	case "/api/something/list/":
 		list, err := something.List(true)
 		if err != nil {
 			// error getting data, sending error

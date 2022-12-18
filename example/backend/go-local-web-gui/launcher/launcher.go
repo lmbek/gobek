@@ -4,7 +4,6 @@ import (
 	"api"
 	"fileserver"
 	"fmt"
-	"net/http"
 	"runtime"
 	"sync"
 )
@@ -51,7 +50,8 @@ func StartServer(frontendPath string) error {
 	fileserver.FrontendPath = frontendPath
 
 	// HTTP HANDLERS
-	http.HandleFunc("/", fileserver.ServeFileServer) // address: /
-	http.HandleFunc("/api/", api.ServeAPIUseGZip)    // address: /api/
+	api.InitHandler() // TODO: Ignore package if not found - Give warning instead
+	fileserver.InitHandler()
+
 	return fileserver.GracefulStart()
 }

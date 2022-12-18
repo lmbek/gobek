@@ -40,6 +40,10 @@ func GetServerAddress() string {
 	return server.Addr
 }
 
+func InitHandler() {
+	http.HandleFunc("/", ServeFileServer)
+}
+
 func ServeFileServer(response http.ResponseWriter, request *http.Request) {
 
 	fileSystem := FileSystem{http.Dir(FrontendPath), 2}
