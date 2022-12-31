@@ -5,13 +5,14 @@ import (
 	"fileserver"
 	"fmt"
 	"os"
-	"sync"
+	"os/exec"
+	"os/signal"
+	"syscall"
 	"time"
 	"utils"
 	"utils/net"
 	"utils/random"
 	"utils/slice"
-	goCmd "windows/go-cmd"
 	messageboxw "windows/win32api"
 )
 
@@ -27,57 +28,61 @@ type ChromeLauncher struct {
 	portAsString            string // will be set doing runtime
 }
 
-func (launcher *ChromeLauncher) launchChromeForWindows(waitgroup *sync.WaitGroup) (bool, *sync.WaitGroup) {
-	var openFrontendAllowed bool
+// launchChromeForWindows
+// Check if chrome.exe is installed in program files (default location)
+// If it is not installed then give a windows warning and exit
+// Then check if this application is already installed in chrome localappdata
+// if it is not installed continue (application will shut down, because frontend was not allowed to open, as backend should stop if frontend stops)
+// Then continue - else check if frontend is open
+// If frontend is allowed to open, because it is not already open
+// Then start frontend
+func (launcher *ChromeLauncher) launchChromeForWindows() bool {
+	// assert chrome is installed
+	launcher.assertChromeIsInstalled()
 
-	_, err := os.Stat(launcher.Location)
-	if err != nil {
-		messageboxw.WarningYouNeedToInstallChrome()
-		os.Exit(0)
-	} else {
-	}
+	// check if application is already open
+	frontendAlreadyOpen := launcher.isApplicationOpen()
 
-	// 1) Check if app is installed
-	_, err = os.Stat(launcher.FrontendInstallLocation)
-
-	if err != nil { // it is not installed
-		openFrontendAllowed = true
-	} else { // it is installed
-		err = os.Rename(launcher.FrontendInstallLocation, launcher.FrontendInstallLocation) // check lock
-		if err != nil {
-			// TODO: We need a GO version of the C# WindowsProcessor project
-			// TODO: Improvements to be made with this: good open and close of app, and maybe better boot time
-			fmt.Println("Frontend Already open... assuming Backend is too") // it is locked
-			fmt.Println("Otherwise close the open Frontend before launching")
-			fmt.Println("Both needs to not be running in order to start the program")
-			openFrontendAllowed = false
-		} else { // If it could rename, then it is not locked, open frontend
-			openFrontendAllowed = true
-		}
-	}
-
-	if openFrontendAllowed {
+	// open frontend if not already open
+	if frontendAlreadyOpen == false {
 		// get random port
-		openBackendAllowed := launcher.findAndSetAvailablePort()
-		if openBackendAllowed {
+		openFrontendAllowed := launcher.findAndSetAvailablePort()
+
+		// if port found, frontend and backend is allowed to start
+		if openFrontendAllowed {
+			// set server address and print selected address with port
 			fileserver.SetServerAddress(launcher.Domain + ":" + launcher.portAsString)
 			fmt.Println("selected address with port: http://" + fileserver.GetServerAddress())
-			// Start frontend
+
+			// Start frontend by starting a new Chrome process
+			path := "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+			cmd := exec.Command(path, "--app=http://"+fileserver.GetServerAddress(), "--user-data-dir="+launcher.FrontendInstallLocation)
+			cmd.Start()
+
+			// Set up a signal handler to gracefully shutdown the program, when it should shutdown
+			signalHandler := make(chan os.Signal, 1)
+			signal.Notify(signalHandler, syscall.SIGINT, syscall.SIGTERM) // TODO: when closing from task manager, it doesn't catch the signal
+
+			// running through terminal (termination)
 			go func() {
-				commandPrompt := goCmd.NewCmd(
-					"cmd.exe",
-					"/C",
-					"start "+launcher.LocationCMD+" --app=http://"+fileserver.GetServerAddress()+" --user-data-dir="+launcher.FrontendInstallLocation)
-				statusChan := commandPrompt.Start()
-				<-statusChan // blocking
+				<-signalHandler // waiting for termination
+				cmd.Process.Kill()
 				fileserver.Shutdown(context.Background())
-				waitgroup.Wait()
 			}()
-			return true, waitgroup
+
+			// running through process (close window)
+			go func() {
+				cmd.Wait() // waiting for close window
+				fileserver.Shutdown(context.Background())
+			}()
+
+			// successfully launched the frontend
+			return true
 		}
-		return false, waitgroup
 	}
-	return false, waitgroup
+
+	// return false, if reached here (the frontend did not launch)
+	return false
 }
 
 func (launcher *ChromeLauncher) findAndSetAvailablePort() bool {
@@ -126,4 +131,52 @@ func (launcher *ChromeLauncher) findAndSetAvailablePort() bool {
 		return false
 	}
 	return false
+}
+
+func (launcher *ChromeLauncher) assertChromeIsInstalled() {
+	// check if chrome.exe is installed
+	_, err := os.Stat(launcher.Location)
+
+	// if not installed give warning
+	if err != nil {
+		messageboxw.WarningYouNeedToInstallChrome()
+		os.Exit(0)
+	}
+}
+
+func (launcher *ChromeLauncher) isApplicationInstalled() bool {
+	// check if this application is installed
+	_, err := os.Stat(launcher.FrontendInstallLocation)
+
+	// if it is not installed continue - else check if frontend is opened already
+	if err != nil {
+		// ignore error message and warnings, return false as it is not installed
+		return false
+	} else {
+		return true
+	}
+}
+
+func (launcher *ChromeLauncher) isApplicationOpen() bool {
+	var alreadyOpen bool
+	isInstalled := launcher.isApplicationInstalled()
+
+	if isInstalled {
+		// check if frontend is opened, by checking if we can rename its folder (is it locked?)
+		// TODO: this can be optimized, so we better can check if frontend is already open.
+		// Currently it can open multiple frontends, if it is installing (because it takes 2 seconds to install)
+		err := os.Rename(launcher.FrontendInstallLocation, launcher.FrontendInstallLocation) // check lock
+		if err != nil {
+			fmt.Println("Frontend Already open... assuming Backend is too") // it is locked
+			fmt.Println("Otherwise close the open Frontend before launching")
+			fmt.Println("Both needs to not be running in order to start the program")
+			alreadyOpen = true
+		} else { // If it could rename, then it is not locked, open frontend (as it is not already open)
+			alreadyOpen = false
+		}
+	} else {
+		alreadyOpen = false // TODO: we should probably rework this - we can wait for it to be installed (wait 1 second) and try again, or we can rework how we look if application is already working, entirely
+	}
+
+	return alreadyOpen
 }
