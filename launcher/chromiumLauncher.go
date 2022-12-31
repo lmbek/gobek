@@ -2,8 +2,8 @@ package launcher
 
 import (
 	"context"
-	"fileserver"
 	"fmt"
+	"github.com/NineNineFive/go-local-web-gui/fileserver"
 	"log"
 	"os"
 	"os/exec"
