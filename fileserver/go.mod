@@ -1,1 +1,1 @@
-module fileserver
+module github.com/NineNineFive/go-local-web-gui/fileserver
