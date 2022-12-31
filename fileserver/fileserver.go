@@ -4,6 +4,7 @@ import (
 	"compress/gzip"
 	"context"
 	"errors"
+	"fmt"
 	"gzipResponse"
 	"log"
 	"net/http"
@@ -33,6 +34,7 @@ var Server = http.Server{
 var ServerGraceShutdownTime = 5 * time.Second
 
 func SetServerAddress(address string) {
+	fmt.Println("address set to: " + address)
 	Server.Addr = address
 }
 
