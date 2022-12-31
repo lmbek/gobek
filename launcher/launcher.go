@@ -1,8 +1,8 @@
 package launcher
 
 import (
-	"fileserver"
 	"fmt"
+	"github.com/NineNineFive/go-local-web-gui/fileserver"
 	"runtime"
 	"sync"
 )
