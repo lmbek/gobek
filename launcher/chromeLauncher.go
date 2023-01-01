@@ -61,7 +61,7 @@ func (launcher *ChromeLauncher) launchChromeForWindows() bool {
 
 			// Set up a signal handler to gracefully shutdown the program, when it should shutdown
 			signalHandler := make(chan os.Signal, 1)
-			signal.Notify(signalHandler, syscall.SIGINT, syscall.SIGTERM) // TODO: when closing from task manager, it doesn't catch the signal
+			signal.Notify(signalHandler, os.Interrupt, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT) // TODO: when closing from task manager, it doesn't catch the signal
 
 			// running through terminal (termination)
 			go func() {
