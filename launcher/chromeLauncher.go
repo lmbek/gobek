@@ -8,7 +8,6 @@ import (
 	"github.com/NineNineFive/go-local-web-gui/utils/net"
 	"github.com/NineNineFive/go-local-web-gui/utils/random"
 	"github.com/NineNineFive/go-local-web-gui/utils/slice"
-	messageboxw "github.com/NineNineFive/go-local-web-gui/windows/win32api"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -126,9 +125,9 @@ func (launcher *ChromeLauncher) findAndSetAvailablePort() bool {
 			if net.IsPortUsed(launcher.Domain, launcher.portAsString) {
 				fmt.Println(launcher.portAsString)
 				if n == 5 {
-					messageboxw.WarningManyPortsNotAvailable(launcher.PortMin, launcher.PortMax)
+					//messageboxw.WarningManyPortsNotAvailable(launcher.PortMin, launcher.PortMax)
 				} else if len(ports) == 1 {
-					messageboxw.WarningNoPortsAvailable()
+					//messageboxw.WarningNoPortsAvailable()
 				}
 				ports = slice.RemoveIndex(ports, randomInt)
 				continue // use different port
@@ -149,7 +148,7 @@ func (launcher *ChromeLauncher) assertChromeIsInstalled() {
 
 	// if not installed give warning
 	if err != nil {
-		messageboxw.WarningYouNeedToInstallChrome()
+		//messageboxw.WarningYouNeedToInstallChrome()
 		os.Exit(0)
 	}
 }
