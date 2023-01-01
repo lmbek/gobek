@@ -25,7 +25,7 @@ type ChromiumLauncher struct {
 	portAsString  string
 }
 
-var DefaultChromiumLauncher = ChromeLauncher{
+var DefaultChromiumLauncher = ChromiumLauncher{
 	Location:      "/var/lib/snapd/desktop/applications/chromium_chromium.desktop", // TODO: check if better location or can be customised
 	Domain:        "localhost",
 	PortMin:       11430,
