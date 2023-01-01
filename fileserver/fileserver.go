@@ -5,7 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"gzipResponse"
+	"github.com/NineNineFive/go-local-web-gui/fileserver/gzipResponse"
 	"log"
 	"net/http"
 	"os"
