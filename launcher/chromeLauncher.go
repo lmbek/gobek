@@ -4,16 +4,16 @@ import (
 	"context"
 	"fmt"
 	"github.com/NineNineFive/go-local-web-gui/fileserver"
+	"github.com/NineNineFive/go-local-web-gui/utils"
+	"github.com/NineNineFive/go-local-web-gui/utils/net"
+	"github.com/NineNineFive/go-local-web-gui/utils/random"
+	"github.com/NineNineFive/go-local-web-gui/utils/slice"
+	messageboxw "github.com/NineNineFive/go-local-web-gui/windows/win32api"
 	"os"
 	"os/exec"
 	"os/signal"
 	"syscall"
 	"time"
-	"utils"
-	"utils/net"
-	"utils/random"
-	"utils/slice"
-	messageboxw "windows/win32api"
 )
 
 type ChromeLauncher struct {

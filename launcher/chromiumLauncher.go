@@ -4,15 +4,15 @@ import (
 	"context"
 	"fmt"
 	"github.com/NineNineFive/go-local-web-gui/fileserver"
+	"github.com/NineNineFive/go-local-web-gui/utils"
+	"github.com/NineNineFive/go-local-web-gui/utils/net"
+	"github.com/NineNineFive/go-local-web-gui/utils/random"
+	"github.com/NineNineFive/go-local-web-gui/utils/slice"
 	"log"
 	"os"
 	"os/exec"
 	"sync"
 	"time"
-	"utils"
-	"utils/net"
-	"utils/random"
-	"utils/slice"
 )
 
 type ChromiumLauncher struct {
