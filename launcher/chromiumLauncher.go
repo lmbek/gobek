@@ -25,7 +25,15 @@ type ChromiumLauncher struct {
 	portAsString  string
 }
 
-func (launcher *ChromiumLauncher) launchChromiumForLinux(waitgroup *sync.WaitGroup) (bool, *sync.WaitGroup) {
+var DefaultChromiumLauncher = ChromeLauncher{
+	Location:      "/var/lib/snapd/desktop/applications/chromium_chromium.desktop", // TODO: check if better location or can be customised
+	Domain:        "localhost",
+	PortMin:       11430,
+	PreferredPort: 11451,
+	PortMax:       11500,
+}
+
+func (launcher *ChromiumLauncher) launchForLinux(waitgroup *sync.WaitGroup) (bool, *sync.WaitGroup) {
 
 	// 1) Check if chromium is installed
 	_, err := os.Stat(launcher.Location)

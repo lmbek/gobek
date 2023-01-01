@@ -28,6 +28,16 @@ type ChromeLauncher struct {
 	portAsString            string // will be set doing runtime
 }
 
+var DefaultChromeLauncher = ChromeLauncher{
+	Location:                "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+	LocationCMD:             "C:\\\"Program Files\"\\Google\\Chrome\\Application\\chrome.exe",
+	FrontendInstallLocation: os.Getenv("localappdata") + "\\Google\\Chrome\\InstalledApps\\" + "DefaultOrganisationName" + "\\" + "DefaultProjectName",
+	Domain:                  "localhost",
+	PortMin:                 11430,
+	PreferredPort:           11451,
+	PortMax:                 11500,
+}
+
 // launchChromeForWindows
 // Check if chrome.exe is installed in program files (default location)
 // If it is not installed then give a windows warning and exit
@@ -36,7 +46,7 @@ type ChromeLauncher struct {
 // Then continue - else check if frontend is open
 // If frontend is allowed to open, because it is not already open
 // Then start frontend
-func (launcher *ChromeLauncher) launchChromeForWindows() bool {
+func (launcher *ChromeLauncher) launchForWindows() bool {
 	// assert chrome is installed
 	launcher.assertChromeIsInstalled()
 
