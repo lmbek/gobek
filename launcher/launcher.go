@@ -7,10 +7,12 @@ import (
 	"sync"
 )
 
-func StartFrontendAndBackendWindows(frontendPath string, launcher ChromeLauncher) {
+// StartOnWindows
+// start frontend (chrome) and backend (http localhost) on Windows
+func StartOnWindows(frontendPath string, chromeLauncher ChromeLauncher) {
 	fmt.Println("Attempting to start on: " + runtime.GOOS + ", " + runtime.GOARCH)
 	// Start Frontend
-	launched := launcher.launchChromeForWindows()
+	launched := chromeLauncher.launchForWindows()
 
 	// Start Backend (if frontend is allowed to launch - not opened already)
 	if launched {
@@ -21,13 +23,15 @@ func StartFrontendAndBackendWindows(frontendPath string, launcher ChromeLauncher
 	}
 }
 
-func StartFrontendAndBackendLinux(frontendPath string, launcher ChromiumLauncher) {
+// StartOnLinux
+// start frontend (chrome) and backend (http localhost) on Windows
+func StartOnLinux(frontendPath string, chromiumLauncher ChromiumLauncher) {
 	fmt.Println("Attempting to start on: " + runtime.GOOS + ", " + runtime.GOARCH)
 	var waitgroup *sync.WaitGroup
 	waitgroup = &sync.WaitGroup{}
 	waitgroup.Add(1)
 	// Start Frontend
-	launched, waitgroup := launcher.launchChromiumForLinux(waitgroup)
+	launched, waitgroup := chromiumLauncher.launchForLinux(waitgroup)
 	if launched {
 		// Start Backend
 		err := StartServer(frontendPath)
@@ -40,8 +44,10 @@ func StartFrontendAndBackendLinux(frontendPath string, launcher ChromiumLauncher
 	}
 }
 
+// StartServer
+// Starts the backend (http localhost)
 func StartServer(frontendPath string) error {
-	fmt.Println("how is this even running?")
+	fmt.Println("Server is now running!")
 	fileserver.FrontendPath = frontendPath
 	return fileserver.GracefulStart()
 }
