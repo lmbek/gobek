@@ -1,4 +1,4 @@
-//go:build windows
+// TODO: this file cannot be used in project, as linux can't compile if it is used. This needs to be fixed
 
 package messageboxw
 
