@@ -65,9 +65,12 @@ func (launcher *ChromeLauncher) launchForWindows() bool {
 
 			// Start frontend by starting a new Chrome process
 			path := "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
-			// TODO: see if --user-data-dir can be removed
+
 			cmd := exec.Command(path, "--app=http://"+fileserver.GetServerAddress(), "--user-data-dir="+launcher.FrontendInstallLocation)
-			cmd.Start()
+			err := cmd.Start()
+			if err != nil {
+				println("Warning: Chrome could not start, is it installed?")
+			}
 
 			// Set up a signal handler to gracefully shutdown the program, when it should shutdown
 			signalHandler := make(chan os.Signal, 1)
