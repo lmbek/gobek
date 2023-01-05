@@ -66,7 +66,7 @@ func (launcher *ChromeLauncher) launchForWindows() bool {
 			// Start frontend by starting a new Chrome process
 			path := "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
 			// TODO: see if --user-data-dir can be removed
-			cmd := exec.Command(path, "--app=http://"+fileserver.GetServerAddress()) // , "--user-data-dir="+launcher.FrontendInstallLocation
+			cmd := exec.Command(path, "--app=http://"+fileserver.GetServerAddress(), "--user-data-dir="+launcher.FrontendInstallLocation)
 			cmd.Start()
 
 			// Set up a signal handler to gracefully shutdown the program, when it should shutdown
