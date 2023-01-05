@@ -65,12 +65,21 @@ func (launcher *ChromeLauncher) launchForWindows() bool {
 
 			// Start frontend by starting a new Chrome process
 			path := "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
-			cmd := exec.Command(path, "--app=http://"+fileserver.GetServerAddress(), "--user-data-dir="+launcher.FrontendInstallLocation)
+			// TODO: see if --user-data-dir can be removed
+			cmd := exec.Command(path, "--app=http://"+fileserver.GetServerAddress()) // , "--user-data-dir="+launcher.FrontendInstallLocation
 			cmd.Start()
 
 			// Set up a signal handler to gracefully shutdown the program, when it should shutdown
 			signalHandler := make(chan os.Signal, 1)
 			signal.Notify(signalHandler, os.Interrupt, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT) // TODO: when closing from task manager, it doesn't catch the signal
+
+			// TODO: Add context with timeout handler (or find out which context to use)
+			// and then find out if it can stop Task Manager from Exiting the program too early
+			// - we need to kill cmd process if it happens
+
+			// TODO: here is some of the code (from https://github.com/halilylm/go-redis/blob/main/main.go)
+			// ctx, cancel := context.WithTimeout(context.Background(),10 * time.Second)
+			//
 
 			// running through terminal (termination)
 			go func() {
