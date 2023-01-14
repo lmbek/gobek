@@ -64,6 +64,8 @@ func setHeaders(response http.ResponseWriter, request *http.Request) http.Respon
 
 	// response.Header().Add("Cache-Control", "max-age=31536000, immutable")
 
+	response.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate")
+	response.Header().Set("Expires", "Thu, 01 Jan 1970 00:00:00 GMT")
 	return response
 }
 
