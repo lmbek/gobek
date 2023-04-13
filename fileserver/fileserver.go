@@ -48,6 +48,7 @@ func ServeFileServer(response http.ResponseWriter, request *http.Request) {
 	fileServerSystem := http.FileServer(fileSystem)
 
 	response = setHeaders(response, request)
+
 	if !strings.Contains(request.Header.Get("Accept-Encoding"), "gzip") {
 		fileServerSystem.ServeHTTP(response, request)
 	} else {
@@ -63,6 +64,11 @@ func setHeaders(response http.ResponseWriter, request *http.Request) http.Respon
 	// Add Cache Cache-Control: max-age=31536000, immutable
 
 	// response.Header().Add("Cache-Control", "max-age=31536000, immutable")
+
+	// Check if the requested file has a ".css" extension
+	if strings.HasSuffix(request.URL.Path, ".css") {
+		response.Header().Set("Content-Type", "text/css")
+	}
 
 	response.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate")
 	response.Header().Set("Expires", "Thu, 01 Jan 1970 00:00:00 GMT")
