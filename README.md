@@ -89,18 +89,18 @@ func launchApp() {
 	switch runtime.GOOS {
 	case "windows":
 		initHTTPHandlers()
-		launcher.StartFrontendAndBackendWindows(frontendPath, chromeLauncher)
+		launcher.StartOnWindows(frontendPath, chromeLauncher)
 		return
 	case "darwin": // "mac"
 		panic("Darwin Not Supported Yet")
 		return
 	case "linux": // "linux"
 		initHTTPHandlers()
-		launcher.StartFrontendAndBackendLinux(frontendPath, chromiumLauncher)
+		launcher.StartOnLinux(frontendPath, chromiumLauncher)
 		return
 	default: // "freebsd", "openbsd", "netbsd"
 		initHTTPHandlers()
-		launcher.StartFrontendAndBackendLinux(frontendPath, chromiumLauncher)
+		launcher.StartOnLinux(frontendPath, chromiumLauncher)
 		return
 	}
 }
