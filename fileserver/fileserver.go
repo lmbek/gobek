@@ -77,40 +77,36 @@ func setHeaders(response http.ResponseWriter, request *http.Request) http.Respon
 
 func Start() error {
 	err := Server.ListenAndServe()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func Shutdown(serverContext context.Context) error {
+	serverContext, cancel := context.WithTimeout(serverContext, ServerGraceShutdownTime)
+	defer cancel()
+	err := Server.Shutdown(serverContext)
+	if err != nil {
+		log.Println("Failed to gracefully shutdown the server:", err)
+		return err
+	}
+	log.Println("Server has been shut down gracefully")
+	return nil
+}
+
+func GracefulStart() error {
+	err := Start()
+
 	if err != nil && !errors.Is(err, http.ErrServerClosed) {
 		return errors.New("ErrServerClosed: " + err.Error())
 	} else if err != nil {
 		return err
 	} else {
-		log.Println("Application stopped gracefully")
-	}
-	return nil
-}
-
-func Shutdown(serverContext context.Context) {
-	serverContext, cancel := context.WithTimeout(serverContext, ServerGraceShutdownTime)
-	defer cancel()
-	err := Server.Shutdown(serverContext)
-	if err != nil {
-		log.Println("Panic soon: " + err.Error())
-		log.Println("Time to panic:")
-		panic(err)
-	} else {
-		log.Println("Application shutdown")
-	}
-}
-
-func GracefulStart() error {
-	err := Start()
-	if err != nil {
-		// if error on start, return error
-		return err
-	} else {
-		// if no error, then prepare how graceful shutdowns should act
 		_, closeChannel := CreateChannel()
 		defer closeChannel()
-		Shutdown(context.Background())
-		return nil
+		log.Println("Application stopped gracefully")
+		return Shutdown(context.Background())
 	}
 }
 

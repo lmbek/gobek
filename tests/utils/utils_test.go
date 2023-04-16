@@ -1,4 +1,4 @@
-package utils
+package utils_test
 
 import (
 	"github.com/NineNineFive/go-local-web-gui/utils"

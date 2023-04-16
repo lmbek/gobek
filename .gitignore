@@ -4,3 +4,4 @@ go.sum.mod
 go.sum.work
 go.mod.sum
 go.work.sum
+windows-api
