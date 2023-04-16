@@ -1,4 +1,4 @@
-package utils
+package net_test
 
 import (
 	"github.com/NineNineFive/go-local-web-gui/utils/net"
