@@ -1,4 +1,4 @@
-package random
+package random_test
 
 import (
 	"github.com/NineNineFive/go-local-web-gui/utils/random"
