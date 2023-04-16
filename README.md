@@ -17,7 +17,7 @@ This project is used by Beksoft ApS for projects such as:
 Write to me at lars@beksoft.dk if you want to have your project listed
 
 ## Requirements to developers
-Go 1.19+
+Go 1.20+
 Chrome (Windows) or Chromium (Linux)
 
 ## Requirements for users
@@ -77,32 +77,14 @@ func main() {
 	launchApp()
 }
 
-func initHTTPHandlers() {
+func launchApp() {
     // static fileserver
 	http.HandleFunc("/", fileserver.ServeFileServer)
 
-    // api (local api can be added)
+    // api (your own local api can be added)
 	//http.HandleFunc("/api/", api.ServeAPIUseGZip)
-}
 
-func launchApp() {
-	switch runtime.GOOS {
-	case "windows":
-		initHTTPHandlers()
-		launcher.StartOnWindows(frontendPath, chromeLauncher)
-		return
-	case "darwin": // "mac"
-		panic("Darwin Not Supported Yet")
-		return
-	case "linux": // "linux"
-		initHTTPHandlers()
-		launcher.StartOnLinux(frontendPath, chromiumLauncher)
-		return
-	default: // "freebsd", "openbsd", "netbsd"
-		initHTTPHandlers()
-		launcher.StartOnLinux(frontendPath, chromiumLauncher)
-		return
-	}
+	launcher.StartCustom()
 }
 </pre>
 
