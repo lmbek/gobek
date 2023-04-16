@@ -8,12 +8,10 @@ import (
 // SIMPLE VERSION
 func TestStart(test *testing.T) {
 	var err error
-
 	err = launcher.Start("./frontend", launcher.DefaultChromeLauncher, launcher.DefaultChromiumLauncher)
 	if err != nil {
 		test.Errorf("Expected no error, but got: %v", err)
 	}
-
 }
 
 /*
