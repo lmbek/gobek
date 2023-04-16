@@ -63,28 +63,14 @@ var chromeLauncher = launcher.ChromeLauncher{
 }
 
 var chromiumLauncher = launcher.DefaultChromiumLauncher // default chrome or chromium launcher settings can be used like this
-/* // Otherwise they can also be customized like this
-var chromiumLauncher = launcher.ChromiumLauncher{
-	Location:      "/var/lib/snapd/desktop/applications/chromium_chromium.desktop", // TODO: check if better location or can be customised
-	Domain:        "localhost",
-	PortMin:       11430,
-	PreferredPort: 11451,
-	PortMax:       11500,
-}
-*/
 
 func main() {
-	launchApp()
-}
+	http.HandleFunc("/api/", api.ServeAPIUseGZip)
 
-func launchApp() {
-    // static fileserver
-	http.HandleFunc("/", fileserver.ServeFileServer)
-
-    // api (your own local api can be added)
-	//http.HandleFunc("/api/", api.ServeAPIUseGZip)
-
-	launcher.StartCustom()
+	err := launcher.Start(frontendPath, chromeLauncher, chromiumLauncher) // serves "/" as fileserver.ServeFileServer. If you want to manage "/", then use launcher.StartCustom() instead
+	if err != nil {
+		fmt.Println(err)
+	}
 }
 </pre>
 
