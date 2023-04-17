@@ -2,7 +2,7 @@ package fileserver_test
 
 import (
 	"errors"
-	"github.com/NineNineFive/go-local-web-gui/fileserver"
+	"github.com/lmbek/gobek/fileserver"
 	"net/http"
 	"net/http/httptest"
 	"testing"

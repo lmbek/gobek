@@ -1,7 +1,7 @@
 package random_test
 
 import (
-	"github.com/NineNineFive/go-local-web-gui/utils/random"
+	"github.com/lmbek/gobek/utils/random"
 	"testing"
 )
 

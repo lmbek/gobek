@@ -1,7 +1,7 @@
 package fileserver
 
 import (
-	"github.com/NineNineFive/go-local-web-gui/fileserver"
+	"github.com/lmbek/gobek/fileserver"
 	"net/http"
 	"net/http/httptest"
 	"testing"

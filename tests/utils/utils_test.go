@@ -1,7 +1,7 @@
 package utils_test
 
 import (
-	"github.com/NineNineFive/go-local-web-gui/utils"
+	"github.com/lmbek/gobek/utils"
 	"reflect"
 	"testing"
 )

@@ -1,7 +1,7 @@
 package launcher_test
 
 import (
-	"github.com/NineNineFive/go-local-web-gui/launcher"
+	"github.com/lmbek/gobek/launcher"
 	"testing"
 )
 
