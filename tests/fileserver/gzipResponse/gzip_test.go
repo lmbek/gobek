@@ -3,7 +3,7 @@ package gzipResponse_test
 import (
 	"bytes"
 	"compress/gzip"
-	"github.com/NineNineFive/go-local-web-gui/fileserver/gzipResponse"
+	"github.com/lmbek/gobek/fileserver/gzipResponse"
 	"io/ioutil"
 	"net/http/httptest"
 	"testing"
