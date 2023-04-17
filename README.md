@@ -21,9 +21,11 @@ Lars Morten Bek (https://github.com/lmbek)
 ## Requirements to developers
 Go 1.20+
 Chrome (Windows) or Chromium (Linux)
+macOS/DARWIN NOT SUPPORTED YET
 
 ## Requirements for users
 Chrome (Windows) or Chromium (Linux)
+macOS/DARWIN NOT SUPPORTED YET
 
 ## How to use (download example project)
 The best way to start using the project is to download the example project at:
@@ -68,8 +70,10 @@ var chromeLauncher = launcher.ChromeLauncher{
 var chromiumLauncher = launcher.DefaultChromiumLauncher // default chrome or chromium launcher settings can be used like this
 
 func main() {
-	http.HandleFunc("/api/", api.ServeAPIUseGZip)
+    // if you want to have an api, you can add your own
+	//http.HandleFunc("/api/", api.ServeAPIUseGZip)
 
+    // if you want to use your own http handlerFunc, you can use launcher.StartCustom instead
 	err := launcher.Start(frontendPath, chromeLauncher, chromiumLauncher) // serves "/" as fileserver.ServeFileServer. If you want to manage "/", then use launcher.StartCustom() instead
 	if err != nil {
 		fmt.Println(err)
