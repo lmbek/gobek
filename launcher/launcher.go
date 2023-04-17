@@ -3,7 +3,7 @@ package launcher
 import (
 	"errors"
 	"fmt"
-	"github.com/NineNineFive/go-local-web-gui/fileserver"
+	"github.com/lmbek/gobek/fileserver"
 	"net/http"
 	"runtime"
 	"sync"

@@ -1,7 +1,7 @@
 package net_test
 
 import (
-	"github.com/NineNineFive/go-local-web-gui/utils/net"
+	"github.com/lmbek/gobek/utils/net"
 	"strconv"
 	"testing"
 )

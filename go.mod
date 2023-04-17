@@ -1,3 +1,3 @@
-module github.com/NineNineFive/go-local-web-gui
+module github.com/lmbek/gobek
 
 go 1.20
