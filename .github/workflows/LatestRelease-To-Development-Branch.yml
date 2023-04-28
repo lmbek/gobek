@@ -8,21 +8,24 @@ on:
 jobs:
   merge:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Set Git user
+      - name: Set up Git configuration
         run: |
-          git config --global user.name "Lars M Bek (automated)"
           git config --global user.email "lars@beksoft.dk"
+          git config --global user.name "Lars M Bek (automated)"
+
       - name: Checkout LatestRelease
         uses: actions/checkout@v2
         with:
           ref: LatestRelease
+
       - name: Checkout Development
         uses: actions/checkout@v2
         with:
           ref: Development
-      - name: Update Development branch with LatestRelease
+
+      - name: Merge LatestRelease into Development branch
         run: |
-          git checkout Development
-          git pull origin LatestRelease --no-edit
+          git merge --allow-unrelated-histories origin/LatestRelease --no-edit
           git push origin Development
