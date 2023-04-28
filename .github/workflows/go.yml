@@ -15,11 +15,14 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v3
+    
+    - uses: browser-actions/setup-chrome@v1
+    - run: chrome --version
 
     - name: Set up Go
       uses: actions/setup-go@v3
       with:
         go-version: 1.19
         
-    - name: Test
+    - name: Go Tests
       run: go test -v ./tests/./...
