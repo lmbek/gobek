@@ -1,0 +1,27 @@
+name: On-push to LatestRelease, update Development branch
+
+on:
+  push:
+    branches:
+      - LatestRelease
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up Git configuration
+        run: |
+          git config --global user.email "lars@beksoft.dk"
+          git config --global user.name "Lars M Bek (automated)"
+
+      - name: Checkout Development
+        uses: actions/checkout@v2
+        with:
+          ref: Development
+
+      - name: Merge LatestRelease into Development branch
+        run: |
+          git fetch origin LatestRelease # Update the LatestRelease remote tracking branch
+          git merge origin/LatestRelease --allow-unrelated-histories # Merge the changes from LatestRelease
+          git push # Push the changes to the remote repository
