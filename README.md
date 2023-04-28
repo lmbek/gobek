@@ -93,3 +93,6 @@ Use something like goversioninfo: https://github.com/josephspurrier/goversioninf
 
 ## How to make setup file and update functionality
 Coming later
+
+## Further plans
+I want to embed chromium or webview into this project at some time. Please let me know or make a pull request if you want to help.
