@@ -28,5 +28,5 @@ jobs:
       - name: Merge LatestRelease into Development branch
         run: |
           git fetch origin LatestRelease
-          git pull --allow-unrelated-histories origin LatestRelease --no-edit
+          git merge --ff-only origin/LatestRelease
           git push origin Development
