@@ -21,6 +21,7 @@ Lars Morten Bek (https://github.com/lmbek)
 ## Requirements to developers
 Go 1.20+
 Chrome (Windows) or Chromium (Linux)
+This is a GUI and thereby it requires more than just using CMD/Terminal on a server (It is made for users)
 
 ## Requirements for users
 Chrome (Windows) or Chromium (Linux)
