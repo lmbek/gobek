@@ -1,4 +1,4 @@
-name: Update Development branch with merge from LatestRelease
+name: On Push to LatestRelease, merge LatestRelease into Development Branch
 
 on:
   push:
@@ -15,8 +15,12 @@ jobs:
       with:
         ref: LatestRelease
 
-    - name: Merge LatestRelease into Development branch
+    - name: Checkout Development
+      uses: actions/checkout@v2
+      with:
+        ref: Development
+
+    - name: Merge LatestRelease into Development
       run: |
-        git checkout Development
         git merge LatestRelease --no-edit
         git push origin Development
