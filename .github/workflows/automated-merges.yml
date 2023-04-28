@@ -1,36 +1,27 @@
 name: Update every branch with merge from LatestRelease
 
 on:
-  pull_request:
-    types: [closed]
+  push:
+    branches:
+      - LatestRelease
 
 jobs:
-  merge-to-dev:
+  merge:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+    - name: Checkout LatestRelease
+      uses: actions/checkout@v2
+      with:
+        ref: LatestRelease
 
-      - name: Merge to Development branch
-        if: github.ref == 'refs/heads/LatestRelease'
-        run: |
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-          git checkout Development
-          git merge --no-ff ${{ github.event.pull_request.head.ref }} -m "Merge pull request #${{ github.event.pull_request.number }}"
-
-      - name: Merge to Dev-LMB branch
-        if: github.ref == 'refs/heads/LatestRelease'
-        run: |
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-          git checkout Dev-LMB
-          git merge --no-ff ${{ github.event.pull_request.head.ref }} -m "Merge pull request #${{ github.event.pull_request.number }}"
-
-      - name: Merge to Dev-IMJ branch
-        if: github.ref == 'refs/heads/LatestRelease'
-        run: |
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-          git checkout Dev-IMJ
-          git merge --no-ff ${{ github.event.pull_request.head.ref }} -m "Merge pull request #${{ github.event.pull_request.number }}"
+    - name: Get list of branches
+      run: |
+        git branch -r | grep -v LatestRelease | awk '{print $1}' > branches.txt
+    - name: Merge LatestRelease into all branches
+      run: |
+        while read branch; do
+          git checkout $branch
+          git merge LatestRelease --no-edit
+          git push origin $branch
+        done < branches.txt
