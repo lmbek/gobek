@@ -15,10 +15,12 @@ jobs:
           git config --global user.email "lars@beksoft.dk"
           git config --global user.name "Lars M Bek (automated)"
 
-      - name: Checkout Development, Merge LatestRelease into Development branch
+      - name: Checkout Development
         uses: actions/checkout@v2
         with:
           ref: Development
+
+      - name: Merge LatestRelease into Development branch
         run: |
           git fetch origin LatestRelease # Update the LatestRelease remote tracking branch
           git merge origin/LatestRelease --allow-unrelated-histories # Merge the changes from LatestRelease
