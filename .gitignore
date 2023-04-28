@@ -5,3 +5,4 @@ go.sum.work
 go.mod.sum
 go.work.sum
 windows-api
+*.exe
