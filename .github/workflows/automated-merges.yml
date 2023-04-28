@@ -1,0 +1,36 @@
+name: Update every branch with merge from LatestRelease
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  merge-to-dev:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Merge to Development branch
+        if: github.ref == 'refs/heads/LatestRelease'
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git checkout Development
+          git merge --no-ff ${{ github.event.pull_request.head.ref }} -m "Merge pull request #${{ github.event.pull_request.number }}"
+
+      - name: Merge to Dev-LMB branch
+        if: github.ref == 'refs/heads/LatestRelease'
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git checkout Dev-LMB
+          git merge --no-ff ${{ github.event.pull_request.head.ref }} -m "Merge pull request #${{ github.event.pull_request.number }}"
+
+      - name: Merge to Dev-IMJ branch
+        if: github.ref == 'refs/heads/LatestRelease'
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git checkout Dev-IMJ
+          git merge --no-ff ${{ github.event.pull_request.head.ref }} -m "Merge pull request #${{ github.event.pull_request.number }}"
