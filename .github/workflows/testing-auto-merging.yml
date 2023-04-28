@@ -20,7 +20,7 @@ jobs:
         with:
           ref: Development
 
-      - name: Merge LatestRelease into Development
+      - name: Merge LatestRelease into Development branch
         run: |
-          git merge origin/LatestRelease --no-edit
+          git merge --allow-unrelated-histories origin/LatestRelease --no-edit
           git push origin Development
