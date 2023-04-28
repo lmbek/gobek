@@ -1,0 +1,20 @@
+name: Update every branch with merge from LatestRelease testing list
+
+on:
+  push:
+    branches:
+      - LatestRelease
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout LatestRelease
+      uses: actions/checkout@v2
+      with:
+        ref: LatestRelease
+
+    - name: Get list of branches
+      run: |
+        git branch -r | grep -v LatestRelease | awk '{print $1}' > branches.txt
