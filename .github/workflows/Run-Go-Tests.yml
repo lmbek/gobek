@@ -4,8 +4,8 @@
 name: Go Tests (only random package)
 
 on:
-  push:
-    branches: [ "LatestRelease" ]
+ # push:
+ #   branches: [ "LatestRelease" ]
   pull_request:
     branches: [ "LatestRelease" ]
 

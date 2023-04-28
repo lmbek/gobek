@@ -1,4 +1,4 @@
-name: On-push to LatestRelease, merge LatestRelease into Development Branch
+name: On-push to LatestRelease, update Development branch
 
 on:
   push:
@@ -10,11 +10,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Set Git user
-        run: |
-          git config --global user.name "Lars M Bek (automated)"
-          git config --global user.email "lars@beksoft.dk"
-
       - name: Checkout LatestRelease
         uses: actions/checkout@v2
         with:
@@ -25,7 +20,14 @@ jobs:
         with:
           ref: Development
 
-      - name: Merge LatestRelease into Development branch
+      - name: Set git user
         run: |
-          git merge --allow-unrelated-histories origin/LatestRelease --no-edit
+          git config --global user.email "lars@beksoft.dk"
+          git config --global user.name "Lars M Bek (automated)"
+
+      - name: Update Development branch with LatestRelease
+        run: |
+          git checkout Development
+          git pull origin LatestRelease --no-edit
           git push origin Development
+
