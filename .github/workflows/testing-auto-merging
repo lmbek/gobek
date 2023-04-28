@@ -1,4 +1,4 @@
-name: Update every branch with merge from LatestRelease testing list
+name: Update Development branch with merge from LatestRelease
 
 on:
   push:
@@ -15,6 +15,8 @@ jobs:
       with:
         ref: LatestRelease
 
-    - name: Get list of branches
+    - name: Merge LatestRelease into Development branch
       run: |
-        git branch -r | grep -v LatestRelease | awk '{print $1}' > branches.txt
+        git checkout Development
+        git merge LatestRelease --no-edit
+        git push origin Development
