@@ -66,6 +66,14 @@ func setHeaders(response http.ResponseWriter, request *http.Request) http.Respon
 	// response.Header().Add("Cache-Control", "max-age=31536000, immutable")
 
 	// Check if the requested file has a ".css" extension
+	if strings.HasSuffix(request.URL.Path, ".html") {
+		response.Header().Set("Content-Type", "text/html")
+	}
+
+	if strings.HasSuffix(request.URL.Path, ".js") {
+		response.Header().Set("Content-Type", "application/javascript")
+	}
+
 	if strings.HasSuffix(request.URL.Path, ".css") {
 		response.Header().Set("Content-Type", "text/css")
 	}
