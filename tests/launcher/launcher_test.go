@@ -3,8 +3,8 @@ package launcher
 import (
 	"errors"
 	"fmt"
-	"github.com/lmbek/gobek/helpers"
 	"github.com/lmbek/gobek/launcher"
+	"github.com/lmbek/gobek/tests/helpers"
 	"os"
 	"sync"
 	"testing"

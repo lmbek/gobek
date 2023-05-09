@@ -3,7 +3,7 @@ package gzipResponse
 import (
 	"bytes"
 	"compress/gzip"
-	"github.com/lmbek/gobek/gzipResponse"
+	"github.com/lmbek/gobek/fileserver/gzipResponse"
 	"io/ioutil"
 	"net/http/httptest"
 	"testing"

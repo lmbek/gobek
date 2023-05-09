@@ -3,7 +3,7 @@ package fileserver
 import (
 	"fmt"
 	"github.com/lmbek/gobek/fileserver"
-	"github.com/lmbek/gobek/helpers"
+	"github.com/lmbek/gobek/tests/helpers"
 	"net/http"
 	"net/http/httptest"
 	"testing"

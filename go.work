@@ -1,7 +1,1 @@
 use .
-use ./fileserver
-use ./fileserver/gzipResponse
-use ./launcher
-use ./tests/helpers
-//use ./tests/fileserver
-//use ./tests/fileserver/gzipResponse
