@@ -1,1 +1,0 @@
-module github.com/lmbek/gobek/launcher
