@@ -1,9 +1,9 @@
-package gzipResponse_test
+package gzipResponse
 
 import (
 	"bytes"
 	"compress/gzip"
-	"github.com/lmbek/gobek/fileserver/gzipResponse"
+	"gzipResponse"
 	"io/ioutil"
 	"net/http/httptest"
 	"testing"
@@ -17,10 +17,7 @@ func TestWriter(t *testing.T) {
 	responseRecorder.Header().Set("Content-Encoding", "gzip")
 
 	// Create a new gzipResponse.Writer, wrapping the mock response writer
-	gzipWriter := gzipResponse.Writer{
-		Writer:         gzip.NewWriter(responseRecorder),
-		ResponseWriter: responseRecorder,
-	}
+	gzipWriter := gzipResponse.Writer{gzip.NewWriter(responseRecorder), responseRecorder}
 
 	// Write some content to the gzip writer
 	content := []byte("test content")
