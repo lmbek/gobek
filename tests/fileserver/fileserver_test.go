@@ -1,37 +1,52 @@
-package fileserver_test
+package fileserver
 
 import (
+	"context"
 	"errors"
-	"github.com/lmbek/gobek/fileserver"
+	"fileserver"
+	"fmt"
+	"helpers"
 	"net/http"
 	"net/http/httptest"
+	"sync"
 	"testing"
 	"time"
 )
 
-func TestSetAndGetServerAddress(t *testing.T) {
-	// Test SetServerAddress
-	fileserver.SetServerAddress("localhost:80")
+var once sync.Once
 
-	// Check if Server.Addr is set correctly
-	if fileserver.Server.Addr != "localhost:80" {
-		t.Errorf("unexpected server address: got %v, want %v", fileserver.Server.Addr, "localhost:80")
-	}
+func TestGetServerAddress(test *testing.T) {
+	// result and expected
+	result := fileserver.GetServerAddress()
+	expected := "localhost:0" // expect default value (localhost:0)
 
-	// Test GetServerAddress
-	addr := fileserver.GetServerAddress()
-
-	// Check if GetServerAddress returns the correct address
-	if addr != "localhost:80" {
-		t.Errorf("unexpected server address: got %v, want %v", addr, "localhost:80")
-	}
+	// check if result is the same as expected
+	helpers.StandardTestChecking(test, result, expected)
 }
 
-func TestServeFileServer(t *testing.T) {
+func TestSetServerAddress(test *testing.T) {
+	original := fileserver.GetServerAddress()
+
+	// Test SetServerAddress
+	fileserver.SetServerAddress("example.com:12345")
+
+	// result and expected
+	result := fileserver.GetServerAddress()
+	expected := "example.com:12345"
+
+	// set variable back to original (so chained tests does not fail)
+	fileserver.SetServerAddress(original)
+
+	// check if result is the same as expected
+	helpers.StandardTestChecking(test, result, expected)
+
+}
+
+func TestServeFileServer(test *testing.T) {
 	// Create a mock HTTP request with Accept-Encoding header set to "gzip"
 	request, err := http.NewRequest("GET", "/", nil)
 	if err != nil {
-		t.Fatal(err)
+		test.Fatal(err)
 	}
 	request.Header.Set("Accept-Encoding", "gzip")
 
@@ -39,75 +54,103 @@ func TestServeFileServer(t *testing.T) {
 	recorder := httptest.NewRecorder()
 
 	// Call ServeFileServer function with mock request and response
+	fileserver.FrontendPath = "./../_frontend" // setting frontend path as we have custom path for testing only (should work with any path)
 	fileserver.ServeFileServer(recorder, request)
 
-	// Check if response status code is 200
-	if status := recorder.Code; status != http.StatusOK {
-		t.Errorf("unexpected status code: got %v, want %v", status, http.StatusOK)
-	}
+	// Check if Content-Encoding header is set to "gzip" by setting result and expected
+	result := recorder.Header().Get("Content-Encoding")
+	expected := "gzip"
 
-	// Check if Content-Encoding header is set to "gzip"
-	if encoding := recorder.Header().Get("Content-Encoding"); encoding != "gzip" {
-		t.Errorf("unexpected content encoding: got %v, want %v", encoding, "gzip")
-	}
+	// check if result is the same as expected
+	helpers.StandardTestChecking(test, result, expected)
 }
 
-// TODO: this test needs to be improved to test what happens when the program terminates
-/*
-func TestStart(t *testing.T) {
-	http.HandleFunc("/", fileserver.ServeFileServer)
-	fileserver.FrontendPath = "./frontend"
+func TestFileServer(test *testing.T) {
+	test.Run("fileserver(run)", func(test *testing.T) {
+		// Code is sensitive, this code should not run parallel with other tests, therefore using waitgroup
+		waitgroup := &sync.WaitGroup{}
+		done := make(chan struct{})
 
-	go func() {
-		err := fileserver.Start()
-		if err != nil {
-			t.Fatalf("Start() returned an unexpected error: %v", err)
-		}
-	}()
+		// initialise fileserver defaults
+		fileserver.FrontendPath = "./../_frontend"
 
-	time.Sleep(1 * time.Second) // Wait for the server to start listening
-
-	resp, err := http.Get("http://localhost")
-	if err != nil {
-		t.Fatalf("Failed to connect to the server: %v", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		t.Errorf("Expected status code %d, but got %d", http.StatusOK, resp.StatusCode)
-	}
-}
-
-func TestShutdown(t *testing.T) {
-	err := fileserver.Shutdown(context.Background())
-	if err != nil {
-		t.Fatalf("Failed to shutdown the server gracefully: %v", err)
-	}
-}
-*/
-// TODO: this test needs to be improved to test what happens when the program terminates
-func TestGracefulStart(t *testing.T) {
-	t.Run("subtest depending on TestShutdown", func(t *testing.T) {
-		http.HandleFunc("/", fileserver.ServeFileServer)
-		fileserver.FrontendPath = "./frontend"
+		once.Do(func() {
+			http.HandleFunc("/", fileserver.ServeFileServer)
+		})
 
 		go func() {
-			err := fileserver.GracefulStart()
-			if err != nil && !errors.Is(err, http.ErrServerClosed) {
-				t.Fatalf("GracefulStart() returned an unexpected error: %v", err)
+			// shutdown app after 3 seconds
+			time.Sleep(time.Second * 3)
+			err := fileserver.Shutdown(context.Background()) //app.Shutdown()
+			if err != nil {
+				fmt.Println(err)
 			}
+			close(done)
 		}()
 
-		time.Sleep(1 * time.Second) // Wait for the server to start listening
+		waitgroup.Add(1)
+		go func() {
+			defer waitgroup.Done()
+			<-done
+		}()
 
-		resp, err := http.Get("http://localhost")
-		if err != nil {
-			t.Fatalf("Failed to connect to the server: %v", err)
-		}
-		defer resp.Body.Close()
+		result := fileserver.GracefulStart().Error()
+		expected := errors.New("http: Server closed").Error()
+		helpers.StandardTestChecking(test, result, expected)
 
-		if resp.StatusCode != http.StatusOK {
-			t.Errorf("Expected status code %d, but got %d", http.StatusOK, resp.StatusCode)
-		}
+		// wait before running other tests as this one has operation critical procedures that requires a bit of isolation
+		waitgroup.Wait()
+	})
+
+	test.Run("fileserver(shutdown)", func(test *testing.T) {
+		// Code is sensitive, this code should not run parallel with other tests, therefore using waitgroup
+		waitgroup := &sync.WaitGroup{}
+		waitgroup.Add(1)
+		result := error(nil)
+		go func() {
+			result = fileserver.Shutdown(context.Background())
+			waitgroup.Done()
+		}()
+
+		expected := error(nil)
+		helpers.StandardTestChecking(test, result, expected)
+		// wait before running other tests as this one has operation critical procedures that requires a bit of isolation
+		waitgroup.Wait()
+	})
+
+	test.Run("fileserver(run->shutdown)", func(test *testing.T) {
+		// Code is sensitive, this code should not run parallel with other tests, therefore using waitgroup
+		waitgroup := &sync.WaitGroup{}
+		waitgroup.Add(1)
+		done := make(chan struct{})
+
+		// initialise fileserver defaults
+		fileserver.FrontendPath = "./../_frontend"
+
+		once.Do(func() {
+			http.HandleFunc("/", fileserver.ServeFileServer)
+		})
+
+		go func() {
+			// shutdown app after 3 seconds
+			time.Sleep(time.Second * 3)
+			err := fileserver.Shutdown(context.Background()) //app.Shutdown()
+			if err != nil {
+				fmt.Println(err)
+			}
+			close(done)
+		}()
+
+		go func() {
+			defer waitgroup.Done()
+			<-done
+		}()
+
+		result := fileserver.GracefulStart().Error()
+		expected := errors.New("http: Server closed").Error()
+		helpers.StandardTestChecking(test, result, expected)
+
+		// wait before running other tests as this one has operation critical procedures that requires a bit of isolation
+		waitgroup.Wait()
 	})
 }
