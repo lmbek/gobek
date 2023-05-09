@@ -4,68 +4,60 @@ import (
 	"context"
 	"fmt"
 	"github.com/lmbek/gobek/fileserver"
-	"github.com/lmbek/gobek/utils"
-	"github.com/lmbek/gobek/utils/net"
-	"github.com/lmbek/gobek/utils/random"
-	"github.com/lmbek/gobek/utils/slice"
-	"log"
-	"os"
+	"net"
 	"os/exec"
-	"sync"
-	"time"
+	"strconv"
 )
 
+// TODO: the linux version will get same port and have some issues. In version 0.7.0 this should be fixed, we will add a struct to make the launchers unique
+
 type ChromiumLauncher struct {
-	Location      string
-	Domain        string
-	PreferredPort int
-	PortMin       int
-	PortMax       int
-	port          int
-	portAsString  string
+	Location string
+	Domain   string
 }
 
 var DefaultChromiumLauncher = ChromiumLauncher{
-	Location:      "/var/lib/snapd/desktop/applications/chromium_chromium.desktop", // TODO: check if better location or can be customised
-	Domain:        "localhost",
-	PortMin:       11430,
-	PreferredPort: 11451,
-	PortMax:       11500,
+	Location: "/var/lib/snapd/desktop/applications/chromium_chromium.desktop", // TODO: check if better location or can be customised
+	Domain:   "localhost",
 }
 
-func (launcher *ChromiumLauncher) launchForLinux(waitgroup *sync.WaitGroup) (bool, *sync.WaitGroup) {
-
-	// 1) Check if chromium is installed
-	_, err := os.Stat(launcher.Location)
+func (launcher *ChromiumLauncher) launchForLinux() bool {
+	fmt.Println("i am running!")
+	// Listen on a random available port on localhost
+	listen, err := net.Listen("tcp", fileserver.GetServerAddress())
 	if err != nil {
-		// TODO: add linux warning for not installed chromium
-		//messageboxw.WarningYouNeedToInstallChromium()
-		fmt.Println("Need to install Chromium")
-		os.Exit(0)
-	} else {
+		fmt.Println(err)
+	}
+	addr := listen.Addr().(*net.TCPAddr)
+	port := strconv.Itoa(addr.Port)
+	listen.Close()
+	fileserver.SetServerAddress(launcher.Domain + ":" + port) // set random available port
+	fmt.Println("selected address with port: http://" + fileserver.GetServerAddress())
+	// Start frontend
+
+	//cmd := exec.Command("chromium", "--temp-profile", "--app=http://"+fileserver.GetServerAddress())
+	cmd = exec.Command("chromium", "--incognito", "--temp-profile", "--app=http://"+fileserver.GetServerAddress())
+	//cmd.Stdout = os.Stdout
+
+	err = cmd.Start()
+	if err != nil {
+		fmt.Println(err)
+		return false
 	}
 
-	openBackendAllowed := launcher.findAndSetAvailablePort()
+	go func() {
+		cmd.Wait()
+		// shutting down file server, graceful shutdown probably not needed, as api can still finish, probably
+		err = fileserver.Shutdown(context.Background())
+		if err != nil {
+			fmt.Println("warning, could not shut server down: " + err.Error())
+		}
+	}()
 
-	if openBackendAllowed {
-		fileserver.SetServerAddress(launcher.Domain + ":" + launcher.portAsString)
-		fmt.Println("selected address with port: http://" + fileserver.GetServerAddress())
-		// Start frontend
-		go func() {
-			//cmd := exec.Command("chromium", "--temp-profile", "--app=http://"+fileserver.GetServerAddress())
-			cmd := exec.Command("chromium", "--incognito", "--temp-profile", "--app=http://"+fileserver.GetServerAddress())
-			cmd.Stdout = os.Stdout
-			err := cmd.Run()
-			if err != nil {
-				log.Fatal(err)
-			}
-			fileserver.Shutdown(context.Background())
-		}()
-		return true, waitgroup
-	}
-	return false, waitgroup
+	return true
 }
 
+/*
 func (launcher *ChromiumLauncher) findAndSetAvailablePort() bool {
 	var portLength int
 	// portMin needs to be 0 or above, and the preferredPort needs to be (portMin or above) or (portMax or below)
@@ -115,11 +107,4 @@ func (launcher *ChromiumLauncher) findAndSetAvailablePort() bool {
 	}
 	return false
 }
-
-func (launcher *ChromiumLauncher) GetPort() int {
-	return launcher.port
-}
-
-func (launcher *ChromiumLauncher) GetPortAsString() string {
-	return launcher.portAsString
-}
+*/

@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path"
 	"strings"
 	"syscall"
 	"time"
@@ -17,7 +18,7 @@ import (
 
 var FrontendPath = "./frontend" // should be set doing runtime by main.go
 var Server = http.Server{
-	Addr:              "", // should be set doing runtime by main.go with fileserver.SetServerAddress
+	Addr:              "localhost:0", // port is set on runtime
 	Handler:           nil,
 	TLSConfig:         nil,
 	ReadTimeout:       5 * time.Second,
@@ -61,26 +62,71 @@ func ServeFileServer(response http.ResponseWriter, request *http.Request) {
 
 func setHeaders(response http.ResponseWriter, request *http.Request) http.ResponseWriter {
 	// Headers can be set here
-	// Add Cache Cache-Control: max-age=31536000, immutable
 
-	// response.Header().Add("Cache-Control", "max-age=31536000, immutable")
-
-	// Check if the requested file has a ".css" extension
-	if strings.HasSuffix(request.URL.Path, ".html") {
-		response.Header().Set("Content-Type", "text/html")
-	}
-
-	if strings.HasSuffix(request.URL.Path, ".js") {
-		response.Header().Set("Content-Type", "application/javascript")
-	}
-
-	if strings.HasSuffix(request.URL.Path, ".css") {
-		response.Header().Set("Content-Type", "text/css")
-	}
+	// set content-type for requested url path
+	contentType := getContentType(path.Ext(request.URL.Path))
+	response.Header().Set("Content-Type", contentType)
 
 	response.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate")
 	response.Header().Set("Expires", "Thu, 01 Jan 1970 00:00:00 GMT")
+
+	// Add Cache Cache-Control: max-age=31536000, immutable
+	// response.Header().Add("Cache-Control", "max-age=31536000, immutable")
 	return response
+}
+
+func getContentType(ext string) string {
+	if len(ext) == 0 {
+		return "text/html" // return and do not run further if no extension, we assume it is html
+	}
+
+	switch ext {
+	case ".html", ".htm", ".shtml":
+		return "text/html"
+	case ".css":
+		return "text/css"
+	case ".js":
+		return "application/javascript"
+	case ".json":
+		return "application/json"
+	case ".xml":
+		return "application/xml"
+	case ".pdf":
+		return "application/pdf"
+	case ".zip":
+		return "application/zip"
+	case ".gzip", ".gz":
+		return "application/gzip"
+	case ".png":
+		return "image/png"
+	case ".jpg", ".jpeg":
+		return "image/jpeg"
+	case ".gif":
+		return "image/gif"
+	case ".svg":
+		return "image/svg+xml"
+	case ".webp":
+		return "image/webp"
+	case ".ico":
+		return "image/x-icon"
+	case ".mp4":
+		return "video/mp4"
+	case ".webm":
+		return "video/webm"
+	case ".mp3":
+		return "audio/mpeg"
+	case ".wav":
+		return "audio/wav"
+	case ".ogg":
+		return "audio/ogg"
+	// cases like these below should be handled by an API, that should return something custom
+	//case ".exe":
+	//	return "application/octet-stream"
+	//case ".msi":
+	//	return "application/octet-stream"
+	default:
+		return "text/plain"
+	}
 }
 
 func Start() error {
@@ -91,18 +137,20 @@ func Start() error {
 	return nil
 }
 
+// TODO: Make proper tests for graceful shutdowns, maybe it does not work properly, remove this comment when confirmed
 func Shutdown(serverContext context.Context) error {
 	serverContext, cancel := context.WithTimeout(serverContext, ServerGraceShutdownTime)
 	defer cancel()
 	err := Server.Shutdown(serverContext)
 	if err != nil {
-		log.Println("Failed to gracefully shutdown the server:", err)
+		log.Println("Failed to gracefully shutdown the server: ", err)
 		return err
 	}
 	log.Println("Server has been shut down gracefully")
 	return nil
 }
 
+// TODO: Make proper tests for graceful shutdowns, maybe it does not work properly, remove this comment when confirmed
 func GracefulStart() error {
 	err := Start()
 
@@ -113,7 +161,8 @@ func GracefulStart() error {
 	} else {
 		_, closeChannel := CreateChannel()
 		defer closeChannel()
-		log.Println("Application stopped gracefully")
+		// Error shutting down gracefully
+		fmt.Println("Application stopped gracefully")
 		return Shutdown(context.Background())
 	}
 }

@@ -42,47 +42,60 @@ Example: how to add framework to main.go
 package main
 
 import (
-	"github.com/lmbek/gobek/fileserver"
+	"fmt"
 	"github.com/lmbek/gobek/launcher"
-	"net/http"
 	"os"
-	"runtime"
 )
 
 // For windows we need a organisation name and project name
 var organisationName = "NewOrganisationName" // put in organisation name
 var projectName = "NewProjectName"           // put in project name
 
-//Remember to create this folder manually if it doesnt exist, and put a index.html file into it
 var frontendPath = "./frontend" // this should be set to where frontend files is (frontend folder: html, css, javascript...)
 
-// remember to change the ports to something unique
 var chromeLauncher = launcher.ChromeLauncher{
-	Location:                "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
-	LocationCMD:             "C:\\\"Program Files\"\\Google\\Chrome\\Application\\chrome.exe",
-	FrontendInstallLocation: os.Getenv("localappdata") + "\\Google\\Chrome\\InstalledApps\\" + organisationName + "\\" + projectName,
-	Domain:                  "localhost",
-	PortMin:                 11430,
-	PreferredPort:           11451,
-	PortMax:                 11500,
+	Location:                os.Getenv("programfiles") + "\\Google\\Chrome\\Application\\chrome.exe",
+	FrontendInstallLocation: os.Getenv("localappdata") + "\\Google\\Chrome\\InstalledApps\\" + "DefaultOrganisationName" + "\\" + "DefaultProjectName",
 }
 
 var chromiumLauncher = launcher.DefaultChromiumLauncher // default chrome or chromium launcher settings can be used like this
 
-func main() {
-    // if you want to have an api, you can add your own
-	//http.HandleFunc("/api/", api.ServeAPIUseGZip)
+/*
+	// Otherwise they can also be customized like this
 
-    // if you want to use your own http handlerFunc, you can use launcher.StartCustom instead
-	err := launcher.Start(frontendPath, chromeLauncher, chromiumLauncher) // serves "/" as fileserver.ServeFileServer. If you want to manage "/", then use launcher.StartCustom() instead
+	var chromiumLauncher = launcher.ChromiumLauncher{
+		Location:      "/var/lib/snapd/desktop/applications/chromium_chromium.desktop", // TODO: check if better location or can be customised
+		Domain:        "localhost",
+	}
+*/
+
+func main() {
+    // add your own API
+	//api.Init()
+	/*
+		var once sync.Once
+		once.Do(func() {
+			http.HandleFunc("/", fileserver.ServeFileServer)
+			http.HandleFunc("/api/", api.ServeAPIUseGZip)
+		})
+		err := launcher.Start(frontendPath, chromeLauncher, chromiumLauncher) // serves "/" as fileserver.ServeFileServer. If you want to manage "/", then use launcher.StartCustom() instead
+		if err != nil {
+			fmt.Println(err)
+		}
+	*/
+	err := launcher.StartDefault(frontendPath, chromeLauncher, chromiumLauncher)
 	if err != nil {
 		fmt.Println(err)
 	}
 }
+
 </pre>
 
+## How to test
+<code>go test ./tests/...</code>
+
 ## How to run
-<code>go run main.go</code>
+make your own main.go by following https://github.com/lmbek/gobek-example
 
 ## How to apply manifest and logo to executible
 Use something like goversioninfo: https://github.com/josephspurrier/goversioninfo
@@ -94,4 +107,4 @@ Use something like goversioninfo: https://github.com/josephspurrier/goversioninf
 Coming later
 
 ## Further plans
-I want to embed chromium or webview into this project at some time. Please let me know or make a pull request if you want to help.
+Huge changes coming to version 0.7.0 that will change the whole project structure, this will break all versions before 0.7.0 when upgrading
