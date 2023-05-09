@@ -2,8 +2,8 @@ package launcher
 
 import (
 	"errors"
-	"fileserver"
 	"fmt"
+	"github.com/lmbek/gobek/fileserver"
 	"net/http"
 	"os/exec"
 	"runtime"

@@ -3,9 +3,9 @@ package fileserver
 import (
 	"context"
 	"errors"
-	"fileserver"
 	"fmt"
-	"helpers"
+	"github.com/lmbek/gobek/fileserver"
+	"github.com/lmbek/gobek/helpers"
 	"net/http"
 	"net/http/httptest"
 	"sync"

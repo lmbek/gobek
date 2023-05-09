@@ -2,8 +2,8 @@ package launcher
 
 import (
 	"context"
-	"fileserver"
 	"fmt"
+	"github.com/lmbek/gobek/fileserver"
 	"net"
 	"os/exec"
 	"strconv"

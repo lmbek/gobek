@@ -1,9 +1,9 @@
 package fileserver
 
 import (
-	"fileserver"
 	"fmt"
-	"helpers"
+	"github.com/lmbek/gobek/fileserver"
+	"github.com/lmbek/gobek/helpers"
 	"net/http"
 	"net/http/httptest"
 	"testing"
