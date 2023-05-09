@@ -2,39 +2,24 @@ package launcher
 
 import (
 	"context"
+	"fileserver"
 	"fmt"
-	"github.com/lmbek/gobek/fileserver"
-	"github.com/lmbek/gobek/utils"
-	"github.com/lmbek/gobek/utils/net"
-	"github.com/lmbek/gobek/utils/random"
-	"github.com/lmbek/gobek/utils/slice"
+	"net"
 	"os"
 	"os/exec"
 	"os/signal"
+	"strconv"
 	"syscall"
-	"time"
 )
 
 type ChromeLauncher struct {
 	Location                string
-	LocationCMD             string
 	FrontendInstallLocation string
-	Domain                  string
-	PreferredPort           int
-	PortMin                 int
-	PortMax                 int
-	port                    int    // will be set doing runtime
-	portAsString            string // will be set doing runtime
 }
 
 var DefaultChromeLauncher = ChromeLauncher{
-	Location:                "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
-	LocationCMD:             "C:\\\"Program Files\"\\Google\\Chrome\\Application\\chrome.exe",
+	Location:                os.Getenv("programfiles") + "\\Google\\Chrome\\Application\\chrome.exe",
 	FrontendInstallLocation: os.Getenv("localappdata") + "\\Google\\Chrome\\InstalledApps\\" + "DefaultOrganisationName" + "\\" + "DefaultProjectName",
-	Domain:                  "localhost",
-	PortMin:                 11430,
-	PreferredPort:           11451,
-	PortMax:                 11500,
 }
 
 // launchChromeForWindows
@@ -46,114 +31,83 @@ var DefaultChromeLauncher = ChromeLauncher{
 // If frontend is allowed to open, because it is not already open
 // Then start frontend
 func (launcher *ChromeLauncher) launchForWindows() bool {
-	// assert chrome is installed
-	launcher.assertChromeIsInstalled()
-
 	// check if application is already open
 	frontendAlreadyOpen := launcher.isApplicationOpen()
 
 	// open frontend if not already open
 	if frontendAlreadyOpen == false {
-		// get random port
-		openFrontendAllowed := launcher.findAndSetAvailablePort()
+		// Listen on a random available port on localhost
+		listen, err := net.Listen("tcp", fileserver.GetServerAddress())
+		if err != nil {
+			fmt.Println(err)
+		}
+		addr := listen.Addr().(*net.TCPAddr)
+		port := strconv.Itoa(addr.Port)
+		listen.Close()
 
-		// if port found, frontend and backend is allowed to start
-		if openFrontendAllowed {
-			// set server address and print selected address with port
-			fileserver.SetServerAddress(launcher.Domain + ":" + launcher.portAsString)
-			fmt.Println("selected address with port: http://" + fileserver.GetServerAddress())
+		// set server address
+		fileserver.SetServerAddress("localhost:" + port)
 
-			// Start frontend by starting a new Chrome process
-			path := "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+		// Print the port that was found
+		fmt.Println("selected address with port: http://" + fileserver.GetServerAddress())
 
-			cmd := exec.Command(path, "--app=http://"+fileserver.GetServerAddress(), "--user-data-dir="+launcher.FrontendInstallLocation)
-			err := cmd.Start()
+		// Start frontend by starting a new Chrome process
+		path := launcher.Location
+
+		cmd = exec.Command(path, "--app=http://"+fileserver.GetServerAddress(), "--user-data-dir="+launcher.FrontendInstallLocation)
+		err = cmd.Start()
+		if err != nil {
+			println("Warning: Chrome could not start, is it installed?")
+		}
+
+		// Set up a signal handler to shutdown the program, when it should shutdown
+		signalHandler := make(chan os.Signal, 1)
+		signal.Notify(signalHandler, os.Interrupt, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT) // TODO: when closing from task manager, it doesn't catch the signal
+
+		// TODO: Add context with timeout handler (or find out which context to use)
+		// and then find out if it can stop Task Manager from Exiting the program too early
+		// - we need to kill cmd process if it happens
+
+		// TODO: here is some of the code (from https://github.com/halilylm/go-redis/blob/main/main.go)
+		// ctx, cancel := context.WithTimeout(context.Background(),10 * time.Second)
+		//
+
+		// running through terminal (termination)
+		go func() {
+			<-signalHandler // waiting for termination
+			err = cmd.Process.Kill()
 			if err != nil {
-				println("Warning: Chrome could not start, is it installed?")
+				fmt.Println("warning, could not wait for cmd.Process.Kill(): " + err.Error())
+			}
+			err = fileserver.Shutdown(context.Background())
+			if err != nil {
+				fmt.Println("warning, could not shut server down: " + err.Error())
+			}
+		}()
+
+		// running through process (close window)
+		go func() {
+			err = cmd.Wait() // waiting for close window
+
+			if err != nil {
+				fmt.Println("warning, could not wait for cmd.Wait (probably this app shut itself down internally with launcher.Shutdown()): " + err.Error())
 			}
 
-			// Set up a signal handler to gracefully shutdown the program, when it should shutdown
-			signalHandler := make(chan os.Signal, 1)
-			signal.Notify(signalHandler, os.Interrupt, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT) // TODO: when closing from task manager, it doesn't catch the signal
+			// shutting down file server, graceful shutdown probably not needed, as api can still finish, probably
+			err = fileserver.Shutdown(context.Background())
+			if err != nil {
+				fmt.Println("warning, could not shut server down: " + err.Error())
+			}
+		}()
 
-			// TODO: Add context with timeout handler (or find out which context to use)
-			// and then find out if it can stop Task Manager from Exiting the program too early
-			// - we need to kill cmd process if it happens
-
-			// TODO: here is some of the code (from https://github.com/halilylm/go-redis/blob/main/main.go)
-			// ctx, cancel := context.WithTimeout(context.Background(),10 * time.Second)
-			//
-
-			// running through terminal (termination)
-			go func() {
-				<-signalHandler // waiting for termination
-				cmd.Process.Kill()
-				fileserver.Shutdown(context.Background())
-			}()
-
-			// running through process (close window)
-			go func() {
-				cmd.Wait() // waiting for close window
-				fileserver.Shutdown(context.Background())
-			}()
-
-			// successfully launched the frontend
-			return true
-		}
+		// successfully launched the frontend
+		return true
 	}
-
 	// return false, if reached here (the frontend did not launch)
 	return false
 }
 
-func (launcher *ChromeLauncher) findAndSetAvailablePort() bool {
-	var portLength int
-	// portMin needs to be 0 or above, and the preferredPort needs to be (portMin or above) or (portMax or below)
-	if launcher.PortMin >= 0 && (launcher.PreferredPort >= launcher.PortMin || launcher.PortMax <= launcher.PreferredPort) {
-		var prefPort int
-		// it needs to be made into: make array that holds numbers from (example) 30995 to 31111
-		portLength = launcher.PortMax - launcher.PortMin
-		ports := make([]int, portLength)
-		for i := 0; i < portLength; i++ {
-			ports[i] = i + launcher.PortMin
-			if ports[i] == launcher.PreferredPort {
-				prefPort = i
-			}
-		}
-		// set random seed
-		random.SetRandomSeed(time.Now().UnixNano())
-		n := 0
-		for len(ports) > 0 {
-			n++
-			// Take random int in array and uses it as port, remove it from array after use
-
-			randomInt := random.GetInt(0, len(ports)-1)
-			if n == 1 {
-				randomInt = prefPort
-			}
-			launcher.port = ports[randomInt]
-			launcher.portAsString = utils.IntegerToString(launcher.port)
-			// test port
-			if net.IsPortUsed(launcher.Domain, launcher.portAsString) {
-				fmt.Println(launcher.portAsString)
-				if n == 5 {
-					//messageboxw.WarningManyPortsNotAvailable(launcher.PortMin, launcher.PortMax)
-				} else if len(ports) == 1 {
-					//messageboxw.WarningNoPortsAvailable()
-				}
-				ports = slice.RemoveIndex(ports, randomInt)
-				continue // use different port
-			} else {
-				return true // use this port
-			}
-		}
-	} else {
-		fmt.Println("PortMax should be higher than PortMin, and they should both be above 0")
-		return false
-	}
-	return false
-}
-
+/*
 func (launcher *ChromeLauncher) assertChromeIsInstalled() {
 	// check if chrome.exe is installed
 	_, err := os.Stat(launcher.Location)
@@ -164,6 +118,7 @@ func (launcher *ChromeLauncher) assertChromeIsInstalled() {
 		os.Exit(0)
 	}
 }
+*/
 
 func (launcher *ChromeLauncher) isApplicationInstalled() bool {
 	// check if this application is installed
