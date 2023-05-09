@@ -49,6 +49,11 @@ func Shutdown() error {
 	return nil
 }
 
+func StartDefault(frontendPath string, chromeLauncher ChromeLauncher, chromiumLauncher ChromiumLauncher) error {
+	InitDefault()
+	return Start(frontendPath, chromeLauncher, chromiumLauncher)
+}
+
 func Start(frontendPath string, chromeLauncher ChromeLauncher, chromiumLauncher ChromiumLauncher) error {
 	switch runtime.GOOS {
 	case "windows":
