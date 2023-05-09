@@ -1,1 +1,1 @@
-module gzipResponse
+module github.com/lmbek/gobek/gzipResponse

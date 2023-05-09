@@ -1,1 +1,1 @@
-module fileserver
+module github.com/lmbek/gobek/fileserver

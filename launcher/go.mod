@@ -1,1 +1,1 @@
-module launcher
+module github.com/lmbek/gobek/launcher
