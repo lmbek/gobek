@@ -67,8 +67,10 @@ func setHeaders(response http.ResponseWriter, request *http.Request) http.Respon
 	contentType := getContentType(path.Ext(request.URL.Path))
 	response.Header().Set("Content-Type", contentType)
 
-	response.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate")
-	response.Header().Set("Expires", "Thu, 01 Jan 1970 00:00:00 GMT")
+	// TODO: Testing new cache-controls june 2023
+	//response.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate")
+	// response.Header().Set("Expires", "Thu, 01 Jan 1970 00:00:00 GMT")
+	response.Header().Set("Cache-Control", "must-revalidate, max-age=31536000")
 
 	// Add Cache Cache-Control: max-age=31536000, immutable
 	// response.Header().Add("Cache-Control", "max-age=31536000, immutable")
