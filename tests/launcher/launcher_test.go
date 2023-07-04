@@ -11,8 +11,6 @@ import (
 	"time"
 )
 
-// TODO: in version 0.7.0 this should be splitted into each of the chrome/chromium launchers instead
-
 // SIMPLE VERSION
 func TestStart(test *testing.T) {
 	//tests.PrintGotFatalError(test, "NOT IMPLEMENTED YET!")

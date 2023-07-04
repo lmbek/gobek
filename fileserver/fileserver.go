@@ -10,20 +10,21 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"path"
 	"strings"
 	"syscall"
 	"time"
 )
 
 var FrontendPath = "./frontend" // should be set doing runtime by main.go
+
+// We want our server to serve requests without timeout, as we might want to make use of native features with some of them blocking
 var Server = http.Server{
 	Addr:              "localhost:0", // port is set on runtime
 	Handler:           nil,
 	TLSConfig:         nil,
-	ReadTimeout:       5 * time.Second,
-	ReadHeaderTimeout: 20 * time.Second,
-	WriteTimeout:      10 * time.Second,
+	ReadTimeout:       0,
+	ReadHeaderTimeout: 0,
+	WriteTimeout:      0,
 	IdleTimeout:       0,
 	MaxHeaderBytes:    0,
 	TLSNextProto:      nil,
@@ -35,7 +36,7 @@ var Server = http.Server{
 var ServerGraceShutdownTime = 5 * time.Second
 
 func SetServerAddress(address string) {
-	fmt.Println("address set to: " + address)
+	fmt.Println("Address set to: " + address)
 	Server.Addr = address
 }
 
@@ -63,70 +64,13 @@ func ServeFileServer(response http.ResponseWriter, request *http.Request) {
 func setHeaders(response http.ResponseWriter, request *http.Request) http.ResponseWriter {
 	// Headers can be set here
 
-	// set content-type for requested url path
-	contentType := getContentType(path.Ext(request.URL.Path))
-	response.Header().Set("Content-Type", contentType)
-
+	// We are using no caching because this is a local application, we could probably speed up application by making cache
 	response.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate")
-	response.Header().Set("Expires", "Thu, 01 Jan 1970 00:00:00 GMT")
-
+	// response.Header().Set("Expires", "Thu, 01 Jan 1970 00:00:00 GMT")
+	// response.Header().Set("Cache-Control", "must-revalidate, max-age=31536000")
 	// Add Cache Cache-Control: max-age=31536000, immutable
 	// response.Header().Add("Cache-Control", "max-age=31536000, immutable")
 	return response
-}
-
-func getContentType(ext string) string {
-	if len(ext) == 0 {
-		return "text/html" // return and do not run further if no extension, we assume it is html
-	}
-
-	switch ext {
-	case ".html", ".htm", ".shtml":
-		return "text/html"
-	case ".css":
-		return "text/css"
-	case ".js":
-		return "application/javascript"
-	case ".json":
-		return "application/json"
-	case ".xml":
-		return "application/xml"
-	case ".pdf":
-		return "application/pdf"
-	case ".zip":
-		return "application/zip"
-	case ".gzip", ".gz":
-		return "application/gzip"
-	case ".png":
-		return "image/png"
-	case ".jpg", ".jpeg":
-		return "image/jpeg"
-	case ".gif":
-		return "image/gif"
-	case ".svg":
-		return "image/svg+xml"
-	case ".webp":
-		return "image/webp"
-	case ".ico":
-		return "image/x-icon"
-	case ".mp4":
-		return "video/mp4"
-	case ".webm":
-		return "video/webm"
-	case ".mp3":
-		return "audio/mpeg"
-	case ".wav":
-		return "audio/wav"
-	case ".ogg":
-		return "audio/ogg"
-	// cases like these below should be handled by an API, that should return something custom
-	//case ".exe":
-	//	return "application/octet-stream"
-	//case ".msi":
-	//	return "application/octet-stream"
-	default:
-		return "text/plain"
-	}
 }
 
 func Start() error {
