@@ -17,13 +17,15 @@ import (
 )
 
 var FrontendPath = "./frontend" // should be set doing runtime by main.go
+
+// We want our server to serve requests without timeout, as we might want to make use of native features with some of them blocking
 var Server = http.Server{
 	Addr:              "localhost:0", // port is set on runtime
 	Handler:           nil,
 	TLSConfig:         nil,
-	ReadTimeout:       5 * time.Second,
-	ReadHeaderTimeout: 20 * time.Second,
-	WriteTimeout:      10 * time.Second,
+	ReadTimeout:       0,
+	ReadHeaderTimeout: 0,
+	WriteTimeout:      0,
 	IdleTimeout:       0,
 	MaxHeaderBytes:    0,
 	TLSNextProto:      nil,
