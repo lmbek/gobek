@@ -49,7 +49,7 @@ func (launcher *ChromeLauncher) launchForWindows() bool {
 		fileserver.SetServerAddress("localhost:" + port)
 
 		// Print the port that was found
-		fmt.Println("selected address with port: http://" + fileserver.GetServerAddress())
+		fmt.Println("Selected address with port: http://" + fileserver.GetServerAddress())
 
 		// Start frontend by starting a new Chrome process
 		path := launcher.Location
@@ -57,7 +57,7 @@ func (launcher *ChromeLauncher) launchForWindows() bool {
 		cmd = exec.Command(path, "--app=http://"+fileserver.GetServerAddress(), "--user-data-dir="+launcher.FrontendInstallLocation)
 		err = cmd.Start()
 		if err != nil {
-			println("Warning: Chrome could not start, is it installed?")
+			println("warning: Chrome could not start, is it installed?")
 		}
 
 		// Set up a signal handler to shutdown the program, when it should shutdown
@@ -106,19 +106,6 @@ func (launcher *ChromeLauncher) launchForWindows() bool {
 	// return false, if reached here (the frontend did not launch)
 	return false
 }
-
-/*
-func (launcher *ChromeLauncher) assertChromeIsInstalled() {
-	// check if chrome.exe is installed
-	_, err := os.Stat(launcher.Location)
-
-	// if not installed give warning
-	if err != nil {
-		//messageboxw.WarningYouNeedToInstallChrome()
-		os.Exit(0)
-	}
-}
-*/
 
 func (launcher *ChromeLauncher) isApplicationInstalled() bool {
 	// check if this application is installed
