@@ -13,6 +13,8 @@ import (
 var once sync.Once
 var cmd *exec.Cmd
 
+var GiveWarnings = true
+
 // StartDefault - This is the function that should be used when starting the program, if no other custom behavior is needed
 // This is meant to be what should be used by users of this open source system
 func StartDefault(frontendPath string, chromeLauncher ChromeLauncher, chromiumLauncher ChromiumLauncher) error {
