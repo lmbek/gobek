@@ -1,4 +1,4 @@
-package launcher
+package gobek
 
 import (
 	"context"
@@ -22,6 +22,8 @@ var DefaultChromeLauncher = ChromeLauncher{
 	FrontendInstallLocation: os.Getenv("localappdata") + "\\Google\\Chrome\\InstalledApps\\" + "DefaultOrganisationName" + "\\" + "DefaultProjectName",
 }
 
+var GiveWarnings = true
+
 // launchChromeForWindows
 // Check if chrome.exe is installed in program files (default location)
 // If it is not installed then give a windows warning and exit
@@ -30,7 +32,7 @@ var DefaultChromeLauncher = ChromeLauncher{
 // Then continue - else check if frontend is open
 // If frontend is allowed to open, because it is not already open
 // Then start frontend
-func (launcher *ChromeLauncher) launchForWindows() bool {
+func (launcher *ChromeLauncher) LaunchForWindows() bool {
 	// check if application is already open
 	frontendAlreadyOpen := launcher.isApplicationOpen()
 
@@ -43,24 +45,43 @@ func (launcher *ChromeLauncher) launchForWindows() bool {
 		}
 		addr := listen.Addr().(*net.TCPAddr)
 		port := strconv.Itoa(addr.Port)
-		listen.Close()
+		err = listen.Close()
+		if err != nil {
+			fmt.Println("Could not close listening on Addr, error: ", err)
+		}
 
 		// set server address
 		fileserver.SetServerAddress("localhost:" + port)
 
-		// Print the port that was found
+		// print the port that was found
 		fmt.Println("Selected address with port: http://" + fileserver.GetServerAddress())
 
-		// Start frontend by starting a new Chrome process
-		path := launcher.Location
-
-		cmd = exec.Command(path, "--app=http://"+fileserver.GetServerAddress(), "--user-data-dir="+launcher.FrontendInstallLocation)
+		// start frontend by starting a new Chrome process
+		cmd = exec.Command(launcher.Location, "--app=http://"+fileserver.GetServerAddress(), "--user-data-dir="+launcher.FrontendInstallLocation)
 		err = cmd.Start()
 		if err != nil {
-			println("warning: Chrome could not start, is it installed?")
+			// could not start
+			fmt.Println("warning: chrome could not start")
+			fmt.Println("error: ", err)
+			// check if chrome is installed
+			_, err = os.Stat(launcher.Location)
+			if err == nil {
+				// do nothing
+			} else if os.IsNotExist(err) {
+				if GiveWarnings {
+					// give message warning with CMD
+					warning := exec.Command("cmd", "/c", "start", "cmd.exe", "/c", "echo Warning: Chrome is not installed on required location: "+launcher.Location+" & echo ___ & echo You can install chrome at https://www.google.com/chrome/ & echo __________ & pause")
+					warningErr := warning.Run()
+					if warningErr != nil {
+						fmt.Println(warningErr)
+					}
+				}
+			} else if err != nil {
+				fmt.Println("Error occurred while checking file existence:", err)
+			}
 		}
 
-		// Set up a signal handler to shutdown the program, when it should shutdown
+		// Set up a signal handler to shut down the program, when it should shutdown
 		signalHandler := make(chan os.Signal, 1)
 		signal.Notify(signalHandler, os.Interrupt, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT) // TODO: when closing from task manager, it doesn't catch the signal
 
