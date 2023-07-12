@@ -35,9 +35,9 @@ This example project uses this package and combines it with a local api
 Then the Go api is being developed and customized by you together with the frontend (JavaScript, HTML, CSS)
 
 ## How to use (with go get)
-first run the following in CMD (with go installed)
-<code>go get github.com/lmbek/gobek</code>
-Example: how to add framework to main.go
+first run the following in CMD (with go installed) <br><br>
+<code>go get github.com/lmbek/gobek</code><br><br>
+Example: how to add framework to main.go<br>
 <pre>
 //go:generate ./bin/windows/go-packager/GoPackager.exe
 // go generate
