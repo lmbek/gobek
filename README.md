@@ -90,15 +90,21 @@ Example: how to add framework to main.go<br>
 	}
 Please do note however that using the main.go from the gobek-example project is recommended
 ## How to test
-
 	go test ./tests/...
 
-## How to run
-make your own main.go by following https://github.com/lmbek/gobek-example
+## How to run (after you made your own main.go)
+    go run main.go
 
 ## How to apply manifest and logo to executible
 Use something like goversioninfo: https://github.com/josephspurrier/goversioninfo
+(Be aware of resource.syso and how it interacts with things like gcc, it is a learning process in itself)
 
 ## How to build
-
 	go build -ldflags -H=windowsgui -o NewProjectName.exe
+
+## For each project only one instance
+The project is made, so you can only have one instance of the same organisation name and project name open, so if you have multiple project you are developing, please change their project names.
+
+## For advanced users (Databases)
+I have made an example project for more advanced users, where i demonstrated use of sqlite together with gobek <br>
+The project can be found at: https://github.com/lmbek/gobek-sqlite-example
