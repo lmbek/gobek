@@ -22,8 +22,6 @@ var DefaultChromeLauncher = ChromeLauncher{
 	FrontendInstallLocation: os.Getenv("localappdata") + "\\Google\\Chrome\\InstalledApps\\" + "DefaultOrganisationName" + "\\" + "DefaultProjectName",
 }
 
-var GiveWarnings = true
-
 // launchChromeForWindows
 // Check if chrome.exe is installed in program files (default location)
 // If it is not installed then give a windows warning and exit
