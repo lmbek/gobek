@@ -1,3 +1,9 @@
+# Note: Archived
+This project is archived as i will not be updating it anymore - I will use webview to do the same as i did with Chrome, this will add stability as i can bundle a special version. However this version will be based on Edge, which might not have the same features as chrome. The new repository for the webview will be called BekView
+<br>Go to: 
+<a href="https://github.com/lmbek/bekview">
+https://github.com/lmbek/bekview
+</a>
 # gobek (Local GUI / Go Chrome Framework)
 
 gobek is a simple framework made for developing localhosted software that can reuse chrome/chromium or embed chromium (in future releases). Both available in deployment for the applications.
@@ -90,15 +96,21 @@ Example: how to add framework to main.go<br>
 	}
 Please do note however that using the main.go from the gobek-example project is recommended
 ## How to test
-
 	go test ./tests/...
 
-## How to run
-make your own main.go by following https://github.com/lmbek/gobek-example
+## How to run (after you made your own main.go)
+    go run main.go
 
 ## How to apply manifest and logo to executible
 Use something like goversioninfo: https://github.com/josephspurrier/goversioninfo
+(Be aware of resource.syso and how it interacts with things like gcc, it is a learning process in itself)
 
 ## How to build
-
 	go build -ldflags -H=windowsgui -o NewProjectName.exe
+
+## For each project only one instance
+The project is made, so you can only have one instance of the same organisation name and project name open, so if you have multiple project you are developing, please change their project names.
+
+## For advanced users (Databases)
+I have made an example project for more advanced users, where i demonstrated use of sqlite together with gobek <br>
+The project can be found at: https://github.com/lmbek/gobek-sqlite-example
