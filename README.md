@@ -1,3 +1,9 @@
+# Note: Archived
+This project is archived as i will not be updating it anymore - I will use webview to do the same as i did with Chrome, this will add stability as i can bundle a special version. However this version will be based on Edge, which might not have the same features as chrome. The new repository for the webview will be called BekView
+<br>Go to: 
+<a href="https://github.com/lmbek/bekview">
+https://github.com/lmbek/bekview
+</a>
 # gobek (Local GUI / Go Chrome Framework)
 
 gobek is a simple framework made for developing localhosted software that can reuse chrome/chromium or embed chromium (in future releases). Both available in deployment for the applications.
